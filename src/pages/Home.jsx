@@ -18,6 +18,12 @@ export default function Home() {
     const [isNotified, setIsNotified] = useState(false);
     const navigate = useNavigate();
     const today = new Date().toLocaleString().split(',')[0].replace(/\//g, '-');
+    const temp = new Date();
+    const yesterday = new Date(temp.getTime());
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayDate = yesterday.toLocaleDateString().split(',')[0].replace(/\//g, '-');
+    const [oldPercent, setOldPercent] = useState(0);
+
     const [userId, setId] = useState(null);
 
     const handleOpen = () => {
@@ -40,7 +46,12 @@ export default function Home() {
                         setPercent(1);
                     else
                         setPercent(data / 100);
-                });      
+                });
+                const oldValue = ref(db, 'users/' + user.uid + "/" + yesterdayDate);
+                onValue(oldValue, (snapshot) => {
+                    const data = snapshot.val().waterIntake;
+                    setOldPercent(data);
+                });         
             } 
             else {
                 console.log("user is not logged in");
@@ -96,6 +107,19 @@ export default function Home() {
                     >
                         Log Out
                     </button>
+                    <p class="date">Yesterday: </p>
+                    <GaugeChart id="gauge-chart3" 
+                        nrOfLevels={30} 
+                        colors={['#EA4228', '#F5CD19', '#5BE12C']}
+                        style={{ width:"10%", minWidth: "100px"}} 
+                        arcWidth={0.3}
+                        percent={oldPercent < 1 ? oldPercent : 1} 
+                        hideText
+                        textColor={["#87CEEB"]}
+                    />
+                    <p class="date">
+                        {oldPercent}%
+                    </p>
                 </div>
                 <GaugeChart id="gauge-chart3" 
                     nrOfLevels={30} 
